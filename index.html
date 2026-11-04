@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇坤老師五年級數學闖關大冒險</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --accent: #f59e0b;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .progress-bar-container {
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .avatar-box {
+            display: flex;
+            align-items: center;
+            background: #eff6ff;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+        }
+
+        .avatar-img {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .dialogue {
+            font-size: 1rem;
+            color: #1e3a8a;
+            line-height: 1.4;
+        }
+
+        .question-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #f1f5f9;
+        }
+
+        .text-input-box {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .submit-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 提示框：預設隱藏，答錯才顯示 */
+        .hint-box {
+            display: none;
+            background: #fef3c7;
+            border: 2px dashed #f59e0b;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            color: #b45309;
+            font-size: 0.95rem;
+        }
+
+        .feedback {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            min-height: 24px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+        }
+
+        .result-screen h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app-container">
+    <header>
+        <h1>🎓 宇坤老師五年級數學闖關大冒險</h1>
+        <p>挑戰 22 個數學關卡，證明你的實力！</p>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="stats">
+            <span id="level-indicator">關卡：1 / 22</span>
+            <span id="score-indicator">得分：0分</span>
+        </div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="avatar-box">
+            <div class="avatar-img">👨‍🏫</div>
+            <div class="dialogue" id="teacher-dialogue">
+                同學們好！我是宇坤老師。準備好迎接今天的 22 關數學挑戰了嗎？加油，發揮實力吧！
+            </div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title" id="question-text">載入題目中...</div>
+            <div id="answer-area"></div>
+            <!-- 提示框：答錯時才會解鎖顯示 -->
+            <div class="hint-box" id="hint-box">
+                💡 <strong>宇坤老師的提示：</strong><span id="hint-text"></span>
+            </div>
+            <div class="feedback" id="feedback-msg"></div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="result-screen hidden">
+        <h2>🎉 恭喜通關完畢！</h2>
+        <div class="avatar-img" style="font-size: 4rem; margin: 20px 0;">🏆</div>
+        <p id="final-score-text" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+        <p id="final-comment" style="color: #475569; margin-bottom: 30px;"></p>
+        <button class="submit-btn" onclick="restartQuiz()">重新挑戰</button>
+    </div>
+</div>
+
+<script>
+    // 22 關題目資料（包含是非題與填空應用題，並帶有解鎖提示）
+    const questions = [
+        {
+            type: "tf",
+            q: "第 1 關：在統計圖表中，當數量太大時，可以用省略符號「～」表示部分的刻度。",
+            options: ["O (對)", "X (錯)"],
+            answer: 1, // 修正為 X (錯)，因為要用雙波浪號
+            hint: "注意看課本與試卷喔！當數量太大時，應該是用「雙波浪號」來表示部分的刻度，而不是單一個波浪號喔！"
+        },
+        {
+            type: "tf",
+            q: "第 2 關：長條圖和折線圖都可能用到省略符號。",
+            options: ["O (對)", "X (錯)"],
+            answer: 0,
+            hint: "這兩種常見的統計圖表，為了節省空間與突顯差距，都可以使用省略符號。"
+        },
+        {
+            type: "tf",
+            q: "第 3 關：任何整數都可以寫成兩個因數相乘，所以所有的數，都有偶數個因數。",
+            options: ["O (對)", "X (錯)"],
+            answer: 1,
+            hint: "想一想，像 9 的因數有 1、3、9（共 3 個），1 的因數只有 1（共 1 個），因數個數不一定都是偶數喔！"
+        },
+        {
+            type: "tf",
+            q: "第 4 關：因為 35 ÷ 7 = 5餘0，所以 7 是 35 的因數。",
+            options: ["O (對)", "X (錯)"],
+            answer: 0,
+            hint: "如果甲數除以乙數沒有餘數（整除），那麼乙數就是甲數的因數。"
+        },
+        {
+            type: "tf",
+            q: "第 5 關：一個三角形最多只能有一個直角或鈍角。",
+            options: ["O (對)", "X (錯)"],
+            answer: 0,
+            hint: "三角形的內角和是 180 度。如果已經有一個直角或鈍角（大於或等於90度），另外兩個角相加必須小於90度，所以不可能有多個直角或鈍角。"
+        },
+        {
+            type: "tf",
+            q: "第 6 關：內角和 360 度的四邊形，一定是正方形。",
+            options: ["O (對)", "X (錯)"],
+            answer: 1,
+            hint: "長方形、平行四邊形、鳶形內角和也是 360 度，但它們不一定是四邊等長、四個角都直角的正方形喔！"
+        },
+        {
+            type: "tf",
+            q: "第 7 關：任何兩數的最大公因數，一定大於 1。",
+            options: ["O (對)", "X (錯)"],
+            answer: 1,
+            hint: "例如 5 和 7 是互質的數，它們的最大公因數是 1 喔！"
+        },
+        {
+            type: "tf",
+            q: "第 8 關：8 和 7 的公倍數有無限多個。",
+            options: ["O (對)", "X (錯)"],
+            answer: 0,
+            hint: "倍數就像數數一樣，最小公倍數求出來後，乘 1、乘 2、乘 3... 可以一直下去，所以有無限多個。"
+        },
+        {
+            type: "tf",
+            q: "第 9 關：角錐和角柱都有 2 個底面。",
+            options: ["O (對)", "X (錯)"],
+            answer: 1,
+            hint: "角柱有上下 2 個底面；但角錐只有 1 個底面，上面尖尖的是頂點喔！"
+        },
+        {
+            type: "tf",
+            q: "第 10 關：教室的牆壁與地板互相垂直。",
+            options: ["O (對)", "X (錯)"],
+            answer: 0,
+            hint: "想像一下正常的房間角落，牆面與底下的地板交接處都是成 90 度的垂直關係。"
+        },
+        {
+            type: "fill-multi",
+            q: "第 11 關：請由小到大依序寫出在 100 到 140 的整數中，所有 11 的倍數。（請輸入三個答案，可用逗號或空格隔開，例如：110, 121, 132）",
+            answer: ["110", "121", "132"],
+            hint: "100 到 140 之間，11 的倍數總共有三個（11×10、11×11、11×12），請把這三個數字都寫出來喔！"
+        },
+        {
+            type: "fill",
+            q: "第 12 關：請寫出 36 和 48 的最大公因數。",
+            answer: "12",
+            hint: "可以試著用短除法，找出 36 和 48 的公因數再相乘。"
+        },
+        {
+            type: "fill",
+            q: "第 13 關：請寫出 20 和 35 的最小公倍數。",
+            answer: "140",
+            hint: "利用短除法求最小公倍數：20 和 35 先用 5 去除..."
+        },
+        {
+            type: "fill",
+            q: "第 14 關：有一個三位數 58□，它是 2 的倍數，也是 3 的倍數，□可能是什麼數字？",
+            answer: ["2","8"]
+            hint: "是 2 的倍數代表末位□必須是偶數（0,2,4,6,8）；是 3 的倍數代表數字總和（5+8+□）必須是 3 的倍數。"
+        },
+        {
+            type: "fill",
+            q: "第 15 關：長方形的海報紙長 60 公分、寬 48 公分，要把這張海報紙裁成相同大小的小正方形，且剛好裁完沒有剩下，小正方形的邊長最長是幾公分？（只需填數字）",
+            answer: "12",
+            hint: "「剛好分完、最大」的概念就是求 60 和 48 的最大公因數喔！"
+        },
+        {
+            type: "fill",
+            q: "第 16 關：洪老師買了 54 罐舒跑和 72 個杯子蛋糕分給同學，每位同學分得舒跑一樣多，杯子蛋糕也一樣多，最多可分給幾位同學？（只需填數字）",
+            answer: "18",
+            hint: "將 54 和 72 分給最多人且平均分配，也是求最大公因數的應用題。"
+        },
+        {
+            type: "fill",
+            q: "第 17 關：鶯歌國小童軍團人數不到 70 人，每 12 人分一組剛好分完；每 15 人分一組也剛好分完，童軍團可能有幾人？（只需填數字）",
+            answer: "60",
+            hint: "先求出 12 和 15 的最小公倍數，再看看小於 70 的倍數有哪些。"
+        },
+        {
+            type: "fill",
+            q: "第 18 關：一個等腰三角形的底角是 50 度，這個等腰三角形的頂角是幾度？（只需填數字，不加單位）",
+            answer: "80",
+            hint: "三角形內角和 180 度。兩個底角都是 50 度，180 - 50 - 50 = ?"
+        },
+        {
+            type: "fill",
+            q: "第 19 關：捲毛哥哥有 2 根吸管，分別為 10 公分和 5 公分，加入下面哪一根吸管後『不能』圍成三角形？選項有：① 5 公分 ② 7 公分 ③ 9 公分 ④ 11 公分。請填入數字代碼：1、2、3 或 4",
+            answer: "1",
+            hint: "三角形兩邊長和大於第三邊。5 + 5 = 10，加入 5 公分時，兩邊和等於第三邊，這樣無法圍成三角形喔！"
+        },
+        {
+            type: "fill",
+            q: "第 20 關：在四邊形中，已知三個內角分別為 80度、100度、140度，求第四個角 ★ 是幾度？（只需填數字）",
+            answer: "40",
+            hint: "四邊形內角和是 360 度，用 360 減掉其他三個已知的角度即可。"
+        },
+        {
+            type: "fill",
+            q: "第 21 關：五角柱總共有幾個頂點？（只需填數字）",
+            answer: "10",
+            hint: "五角柱的上底面有 5 個頂點，下底面也有 5 個頂點，總共 5 × 2 = ?"
+        },
+        {
+            type: "fill",
+            q: "第 22 關：正方體互相平行的面總共有幾組？（只需填數字）",
+            answer: "3",
+            hint: "正方體有 6 個面，每相對的兩個面互相平行，所以有 3 對（組）。"
+        }
+    ];
+
+    let currentLevel = 0;
+    let score = 0;
+
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const levelIndicator = document.getElementById('level-indicator');
+    const scoreIndicator = document.getElementById('score-indicator');
+    const progressBar = document.getElementById('progress-bar');
+    const teacherDialogue = document.getElementById('teacher-dialogue');
+    const questionText = document.getElementById('question-text');
+    const answerArea = document.getElementById('answer-area');
+    const feedbackMsg = document.getElementById('feedback-msg');
+    const hintBox = document.getElementById('hint-box');
+    const hintText = document.getElementById('hint-text');
+
+    function loadQuestion() {
+        feedbackMsg.textContent = "";
+        hintBox.style.display = "none"; // 換題時先隱藏提示，答錯才顯示
+        
+        const qData = questions[currentLevel];
+        levelIndicator.textContent = `關卡：${currentLevel + 1} / ${questions.length}`;
+        scoreIndicator.textContent = `得分：${score}分`;
+        progressBar.style.width = `${((currentLevel) / questions.length) * 100}%`;
+
+        questionText.textContent = qData.q;
+        answerArea.innerHTML = "";
+
+        if (qData.type === "tf") {
+            const grid = document.createElement('div');
+            grid.className = "options-grid";
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(idx);
+                grid.appendChild(btn);
+            });
+            answerArea.appendChild(grid);
+        } else if (qData.type === "fill" || qData.type === "fill-multi") {
+            const input = document.createElement('input');
+            input.type = "text";
+            input.className = "text-input-box";
+            input.id = "user-answer-input";
+            input.placeholder = qData.type === "fill-multi" ? "例如：110, 121, 132" : "請在此輸入答案...";
+            input.onkeydown = (e) => { if (e.key === 'Enter') checkFillAnswer(); };
+
+            const btn = document.createElement('button');
+            btn.className = "submit-btn";
+            btn.textContent = "送出答案";
+            btn.onclick = checkFillAnswer;
+
+            answerArea.appendChild(input);
+            answerArea.appendChild(btn);
+            setTimeout(() => input.focus(), 50);
+        }
+
+        teacherDialogue.textContent = `第 ${currentLevel + 1} 關來囉！仔細思考看看，這題該怎麼解呢？`;
+    }
+
+    function checkAnswer(selectedIdx) {
+        const qData = questions[currentLevel];
+        if (selectedIdx === qData.answer) {
+            handleCorrect();
+        } else {
+            handleIncorrect(qData.hint);
+        }
+    }
+
+    function checkFillAnswer() {
+        const input = document.getElementById('user-answer-input');
+        const userVal = input.value.trim();
+        const qData = questions[currentLevel];
+
+        if (userVal === "") {
+            feedbackMsg.style.color = "var(--error)";
+            feedbackMsg.textContent = "⚠️ 請先輸入答案再送出喔！";
+            return;
+        }
+
+        let isCorrect = false;
+
+        if (qData.type === "fill-multi") {
+            // 將使用者輸入用逗號或空白分割，並去除空字串
+            const userTokens = userVal.split(/[\s,]+/).filter(Boolean);
+            const targetTokens = qData.answer;
+            
+            // 檢查數量是否一致且內容完全吻合
+            if (userTokens.length === targetTokens.length) {
+                isCorrect = targetTokens.every(t => userTokens.includes(t));
+            }
+        } else {
+            isCorrect = (userVal === qData.answer);
+        }
+
+        if (isCorrect) {
+            handleCorrect();
+        } else {
+            handleIncorrect(qData.hint);
+        }
+    }
+
+    function handleCorrect() {
+        score += 5;
+        feedbackMsg.style.color = "var(--success)";
+        feedbackMsg.textContent = "🎉 太棒了！答對了！過關！";
+        teacherDialogue.textContent = "答得漂亮！完全正確，我們前往下一關！";
+        
+        setTimeout(() => {
+            currentLevel++;
+            if (currentLevel < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }, 1200);
+    }
+
+    function handleIncorrect(hint) {
+        feedbackMsg.style.color = "var(--error)";
+        feedbackMsg.textContent = "❌ 哎呀，答錯囉！再想想看！";
+        teacherDialogue.textContent = "別氣餒！看看宇坤老師給你的隱藏提示，再試一次吧！";
+        
+        // 答錯後才顯示提示框
+        hintText.textContent = hint;
+        hintBox.style.display = "block";
+    }
+
+    function showResult() {
+        quizScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+        progressBar.style.width = `100%`;
+        
+        document.getElementById('final-score-text').textContent = `你的總得分是：${score} 分`;
+        
+        let comment = "太厲害了！五年的數學難不倒你！";
+        if (score < 60) {
+            comment = "觀念還要再加強喔！多複習一下課本和講義，下次一定行！";
+        } else if (score < 90) {
+            comment = "表現很棒！已經掌握大部分的五年級數學重點了！";
+        }
+        document.getElementById('final-comment').textContent = comment;
+    }
+
+    function restartQuiz() {
+        currentLevel = 0;
+        score = 0;
+        resultScreen.classList.add('hidden');
+        quizScreen.classList.remove('hidden');
+        loadQuestion();
+    }
+
+    // 初始化載入第一關
+    loadQuestion();
+</script>
+
+</body>
+</html>
