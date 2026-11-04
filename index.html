@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇坤老師五年級數學闖關大冒險</title>
+    <!-- Tailwind CSS CDN for modern, responsive aesthetics -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fee2e2 100%);
+            min-height: 100vh;
+        }
+        .font-playful {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-4 sm:p-6">
+
+    <!-- 頂部標題與進度 -->
+    <header class="w-full max-w-3xl flex flex-col items-center mb-4">
+        <div class="flex items-center justify-between w-full bg-white/85 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-orange-100">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">👨‍🏫</span>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold font-playful text-orange-700">宇坤老師的數學冒險</h1>
+                    <p class="text-xs sm:text-sm text-gray-500">鶯歌國小五年級期中特訓‧共 22 關</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span id="score-display" class="text-lg sm:text-xl font-bold text-orange-600 font-playful">分數: 0</span>
+                <div class="text-xs text-gray-500" id="level-indicator">第 1 / 22 關</div>
+            </div>
+        </div>
+
+        <!-- 進度條 -->
+        <div class="w-full bg-gray-200 rounded-full h-3 mt-3 overflow-hidden shadow-inner">
+            <div id="progress-bar" class="bg-gradient-to-r from-orange-400 to-amber-500 h-3 rounded-full transition-all duration-500" style="width: 4.5%;"></div>
+        </div>
+    </header>
+
+    <!-- 主要遊戲容器 -->
+    <main class="w-full max-w-3xl flex-1 flex flex-col justify-center items-center my-2">
+        
+        <!-- 歡迎畫面 -->
+        <div id="welcome-screen" class="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-xl border border-orange-100 w-full text-center flex flex-col items-center">
+            <div class="text-7xl sm:text-8xl mb-4 animate-float">👨‍🏫✨</div>
+            <h2 class="text-2xl sm:text-3xl font-bold font-playful text-orange-800 mb-3">哈囉！我是宇坤老師～</h2>
+            <p class="text-gray-600 text-base sm:text-lg mb-6 max-w-lg leading-relaxed">
+                準備好迎戰五年級數學複習挑戰了嗎？總共有 22 道精選關卡！答錯時宇坤老師才會解鎖提示給你看喔！跟著宇坤老師一起挑戰滿分吧！
+            </p>
+            <button onclick="startGame()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold font-playful text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                🚀 開始闖關冒險！
+            </button>
+        </div>
+
+        <!-- 遊戲主畫面 (預設隱藏) -->
+        <div id="game-screen" class="hidden bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl border border-orange-100 w-full flex flex-col">
+            
+            <!-- 宇坤老師對話區 -->
+            <div class="flex items-start space-x-3 mb-6 bg-orange-50/80 rounded-2xl p-4 border border-orange-200">
+                <div class="text-3xl sm:text-4xl bg-white p-2 rounded-2xl shadow-sm">👨‍🏫</div>
+                <div>
+                    <span class="text-xs font-bold text-orange-600 uppercase tracking-wider font-playful">宇坤老師叮嚀</span>
+                    <p id="teacher-tip" class="text-gray-700 text-sm sm:text-base mt-1 font-medium">仔細讀題，加油喔！</p>
+                </div>
+            </div>
+
+            <!-- 題目區域 -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="question-category" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full font-playful">第 1 關</span>
+                    <span class="text-xs text-gray-400 font-playful">每題 5 分</span>
+                </div>
+                <h3 id="question-text" class="text-lg sm:text-xl font-bold text-gray-800 leading-snug">
+                    題目載入中...
+                </h3>
+            </div>
+
+            <!-- 選項/作答互動區 -->
+            <div id="answer-area" class="space-y-3 mb-6">
+                <!-- 動態生成作答元件 -->
+            </div>
+
+            <!-- 答錯時解鎖的提示區塊 (預設隱藏) -->
+            <div id="hint-container" class="hidden mb-6 bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-4 text-amber-900 animate-in fade-in duration-300">
+                <div class="flex items-center space-x-2 mb-1">
+                    <span class="text-xl">💡</span>
+                    <span class="font-bold font-playful text-amber-800">宇坤老師的解題提示（答錯解鎖）：</span>
+                </div>
+                <p id="hint-text" class="text-sm sm:text-base text-amber-900/90 pl-7 font-medium"></p>
+            </div>
+
+            <!-- 答題提交按鈕 -->
+            <div class="flex justify-end">
+                <button id="submit-btn" onclick="checkAnswer()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer font-playful">
+                    提交答案 🎯
+                </button>
+            </div>
+        </div>
+
+        <!-- 結算畫面 (預設隱藏) -->
+        <div id="result-screen" class="hidden bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-xl border border-orange-100 w-full text-center flex flex-col items-center">
+            <div id="result-emoji" class="text-7xl sm:text-8xl mb-4 animate-float">🏆</div>
+            <h2 id="result-title" class="text-2xl sm:text-3xl font-bold font-playful text-orange-800 mb-2">闖關成功！</h2>
+            <p id="result-desc" class="text-gray-600 text-base sm:text-lg mb-6">你太棒了！順利通過了宇坤老師的所有考驗。</p>
+            
+            <div class="bg-orange-50 rounded-2xl p-6 mb-6 w-full max-w-xs border border-orange-200">
+                <div class="text-sm text-gray-500 mb-1 font-playful">最終得分</div>
+                <div id="final-score" class="text-4xl font-bold text-orange-600 font-playful">110 / 110</div>
+            </div>
+
+            <button onclick="restartGame()" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold font-playful text-lg px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                🔄 再玩一次挑戰滿分
+            </button>
+        </div>
+
+    </main>
+
+    <!-- 自訂訊息彈窗 (取代 alert) -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl text-center border border-orange-100">
+            <div id="modal-icon" class="text-5xl mb-3">🎉</div>
+            <h3 id="modal-title" class="text-xl font-bold font-playful text-gray-800 mb-2">答對了！</h3>
+            <p id="modal-message" class="text-gray-600 text-sm sm:text-base mb-6">太神啦！你答對這題了！</p>
+            <button onclick="closeModal()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow transition-all font-playful cursor-pointer">
+                下一關 ➡️
+            </button>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="w-full text-center text-xs text-gray-500 mt-4 font-playful">
+        宇坤老師數學教室 &copy; 2026 專為小五同學設計
+    </footer>
+
+    <!-- 遊戲邏輯 JavaScript -->
+    <script>
+        // 22 題精選題庫（完全對應您的複習文字檔內容與雙波浪號、多答案判定）
+        const questions = [
+            {
+                type: 'tf',
+                category: '第 1 關 (是非題)',
+                q: '在統計圖表中，當數量太大時，可以用省略符號「～」表示部分的刻度。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 1, // X (錯)
+                hint: '注意看課本與試卷喔！當數量太大時，應該是用「雙波浪號」來表示部分的刻度，而不是單一個波浪號喔！'
+            },
+            {
+                type: 'tf',
+                category: '第 2 關 (是非題)',
+                q: '長條圖和折線圖都可能用到省略符號。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 0, // O (對)
+                hint: '這兩種常見的統計圖表，為了節省空間與突顯差距，都可以使用省略符號。'
+            },
+            {
+                type: 'tf',
+                category: '第 3 關 (是非題)',
+                q: '任何整數都可以寫成兩個因數相乘，所以所有的數，都有偶數個因數。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 1, // X (錯)
+                hint: '想一想，像 9 的因數有 1、3、9（共 3 個），1 的因數只有 1（共 1 個），因數個數不一定都是偶數喔！'
+            },
+            {
+                type: 'tf',
+                category: '第 4 關 (是非題)',
+                q: '因為 35 ÷ 7 = 5餘0，所以 7 是 35 的因數。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 0, // O (對)
+                hint: '如果甲數除以乙數沒有餘數（整除），那麼乙數就是甲數的因數。'
+            },
+            {
+                type: 'tf',
+                category: '第 5 關 (是非題)',
+                q: '一個三角形最多只能有一個直角或鈍角。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 0, // O (對)
+                hint: '三角形的內角和是 180 度。如果已經有一個直角或鈍角（大於或等於90度），另外兩個角相加必須小於90度，所以不可能有多個直角或鈍角。'
+            },
+            {
+                type: 'tf',
+                category: '第 6 關 (是非題)',
+                q: '內角和 360 度的四邊形，一定是正方形。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 1, // X (錯)
+                hint: '長方形、平行四邊形、鳶形內角和也是 360 度，但它們不一定是四邊等長、四個角都直角的正方形喔！'
+            },
+            {
+                type: 'tf',
+                category: '第 7 關 (是非題)',
+                q: '任何兩數的最大公因數，一定大於 1。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 1, // X (錯)
+                hint: '例如 5 和 7 是互質的數，它們的最大公因數是 1 喔！'
+            },
+            {
+                type: 'tf',
+                category: '第 8 關 (是非題)',
+                q: '8 和 7 的公倍數有無限多個。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 0, // O (對)
+                hint: '倍數就像數數一樣，最小公倍數求出來後，乘 1、乘 2、乘 3... 可以一直下去，所以有無限多個。'
+            },
+            {
+                type: 'tf',
+                category: '第 9 關 (是非題)',
+                q: '角錐和角柱都有 2 個底面。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 1, // X (錯)
+                hint: '角柱有上下 2 個底面；但角錐只有 1 個底面，上面尖尖的是頂點喔！'
+            },
+            {
+                type: 'tf',
+                category: '第 10 關 (是非題)',
+                q: '教室的牆壁與地板互相垂直。',
+                options: ['O (對)', 'X (錯)'],
+                answer: 0, // O (對)
+                hint: '想像一下正常的房間角落，牆面與底下的地板交接處都是成 90 度的垂直關係。'
+            },
+            {
+                type: 'fill-multi',
+                category: '第 11 關 (填充題)',
+                q: '請由小到大依序寫出在 100 到 140 的整數中，所有 11 的倍數。（請輸入三個答案，可用逗號或空格隔開，例如：110, 121, 132）',
+                answer: ['110', '121', '132'],
+                hint: '100 到 140 之間，11 的倍數總共有三個（11×10、11×11、11×12），請把這三個數字都寫出來喔！'
+            },
+            {
+                type: 'fill',
+                category: '第 12 關 (填充題)',
+                q: '請寫出 36 和 48 的最大公因數。',
+                answer: '12',
+                hint: '可以試著用短除法，找出 36 和 48 的公因數再相乘。'
+            },
+            {
+                type: 'fill',
+                category: '第 13 關 (填充題)',
+                q: '請寫出 20 和 35 的最小公倍數。',
+                answer: '140',
+                hint: '利用短除法求最小公倍數：20 和 35 先用 5 去除...'
+            },
+            {
+                type: 'fill-multi',
+                category: '第 14 關 (填充題)',
+                q: '有一個三位數 58□，它是 2 的倍數，也是 3 的倍數，□可能是什麼數字？（請填寫所有可能的答案，如 2, 8）',
+                answer: ['2', '8'],
+                hint: '是 2 的倍數代表末位□必須是偶數（0,2,4,6,8）；是 3 的倍數代表數字總和（5+8+□）必須是 3 的倍數。'
+            },
+            {
+                type: 'fill',
+                category: '第 15 關 (應用題)',
+                q: '長方形的海報紙長 60 公分、寬 48 公分，要把這張海報紙裁成相同大小的小正方形，且剛好裁完沒有剩下，小正方形的邊長最長是幾公分？（只需填數字）',
+                answer: '12',
+                hint: '「剛好分完、最大」的概念就是求 60 和 48 的最大公因數喔！'
+            },
+            {
+                type: 'fill',
+                category: '第 16 關 (應用題)',
+                q: '洪老師買了 54 罐舒跑和 72 個杯子蛋糕分給同學，每位同學分得舒跑一樣多，杯子蛋糕也一樣多，最多可分給幾位同學？（只需填數字）',
+                answer: '18',
+                hint: '將 54 和 72 分給最多人且平均分配，也是求最大公因數的應用題。'
+            },
+            {
+                type: 'fill',
+                category: '第 17 關 (應用題)',
+                q: '鶯歌國小童軍團人數不到 70 人，每 12 人分一組剛好分完；每 15 人分一組也剛好分完，童軍團可能有幾人？（只需填數字）',
+                answer: '60',
+                hint: '先求出 12 和 15 的最小公倍數，再看看小於 70 的倍數有哪些。'
+            },
+            {
+                type: 'fill',
+                category: '第 18 關 (計算題)',
+                q: '一個等腰三角形的底角是 50 度，這個等腰三角形的頂角是幾度？（只需填數字，不加單位）',
+                answer: '80',
+                hint: '三角形內角和 180 度。兩個底角都是 50 度，180 - 50 - 50 = ?'
+            },
+            {
+                type: 'fill',
+                category: '第 19 關 (選擇題型)',
+                q: '捲毛哥哥有 2 根吸管，分別為 10 公分和 5 公分，加入下面哪一根吸管後『不能』圍成三角形？選項有：① 5 公分 ② 7 公分 ③ 9 公分 ④ 11 公分。請填入數字代碼：1、2、3 或 4',
+                answer: '1',
+                hint: '三角形兩邊長和大於第三邊。5 + 5 = 10，加入 5 公分時，兩邊和等於第三邊，這樣無法圍成三角形喔！'
+            },
+            {
+                type: 'fill',
+                category: '第 20 關 (計算題)',
+                q: '在四邊形中，已知三個內角分別為 80度、100度、140度，求第四個角 ★ 是幾度？（只需填數字）',
+                answer: '40',
+                hint: '四邊形內角和是 360 度，用 360 減掉其他三個已知的角度即可。'
+            },
+            {
+                type: 'fill',
+                category: '第 21 關 (立體形體)',
+                q: '五角柱總共有幾個頂點？（只需填數字）',
+                answer: '10',
+                hint: '五角柱的上底面有 5 個頂點，下底面也有 5 個頂點，總共 5 × 2 = ?'
+            },
+            {
+                type: 'fill',
+                category: '第 22 關 (立體形體)',
+                q: '正方體互相平行的面總共有幾組？（只需填數字）',
+                answer: '3',
+                hint: '正方體有 6 個面，每相對的兩個面互相平行，所以有 3 對（組）。'
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = '';
+
+        // Web Audio API 播放音效
+        function playSound(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch (e) {
+                // AudioContext restrictions fallback
+            }
+        }
+
+        function startGame() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            // 更新進度與標題
+            document.getElementById('score-display').innerText = `分數: ${score}`;
+            document.getElementById('level-indicator').innerText = `第 ${currentQuestionIndex + 1} / ${questions.length} 關`;
+            const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            document.getElementById('question-category').innerText = q.category;
+            document.getElementById('question-text').innerHTML = q.q;
+            document.getElementById('teacher-tip').innerText = '仔細閱讀題目，展現你的實力吧！';
+            
+            // 隱藏提示框
+            document.getElementById('hint-container').classList.add('hidden');
+
+            const answerArea = document.getElementById('answer-area');
+            answerArea.innerHTML = '';
+            selectedAnswer = '';
+
+            if (q.type === 'tf') {
+                answerArea.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="selectTfOption(0, this)" class="tf-btn py-5 border-2 border-orange-200 rounded-2xl text-xl font-bold font-playful bg-white hover:bg-orange-50 text-orange-700 shadow-sm transition-all cursor-pointer flex flex-col items-center justify-center">
+                            <span class="text-3xl mb-1">⭕</span> 正確 (O)
+                        </button>
+                        <button onclick="selectTfOption(1, this)" class="tf-btn py-5 border-2 border-orange-200 rounded-2xl text-xl font-bold font-playful bg-white hover:bg-orange-50 text-red-600 shadow-sm transition-all cursor-pointer flex flex-col items-center justify-center">
+                            <span class="text-3xl mb-1">❌</span> 錯誤 (X)
+                        </button>
+                    </div>
+                `;
+            } else if (q.type === 'fill' || q.type === 'fill-multi') {
+                answerArea.innerHTML = `
+                    <div class="flex flex-col space-y-2">
+                        <label class="text-sm font-bold text-gray-600 font-playful">請在下方輸入您的答案：</label>
+                        <input type="text" id="fill-input" placeholder="${q.type === 'fill-multi' ? '多個答案請用逗號隔開，例如：110, 121, 132' : '請輸入答案...'}" class="w-full p-4 border-2 border-orange-300 rounded-2xl text-lg focus:outline-none focus:border-orange-500 shadow-inner font-medium bg-orange-50/30">
+                    </div>
+                `;
+            }
+        }
+
+        function selectTfOption(val, element) {
+            selectedAnswer = val;
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('border-orange-500', 'bg-orange-100', 'ring-2');
+            });
+            element.classList.add('border-orange-500', 'bg-orange-100', 'ring-2');
+        }
+
+        function checkAnswer() {
+            const q = questions[currentQuestionIndex];
+            if (q.type === 'fill' || q.type === 'fill-multi') {
+                const inputEl = document.getElementById('fill-input');
+                if (!inputEl) return;
+                selectedAnswer = inputEl.value.trim();
+            }
+
+            if (selectedAnswer === '' || selectedAnswer === undefined || selectedAnswer === null) {
+                showModal('⚠️', '請先作答', '請選擇或輸入答案後再送出喔！', false);
+                return;
+            }
+
+            let isCorrect = false;
+
+            if (q.type === 'tf') {
+                isCorrect = (selectedAnswer === q.answer);
+            } else if (q.type === 'fill-multi') {
+                const userTokens = String(selectedAnswer).split(/[\s,]+/).filter(Boolean);
+                const targetTokens = q.answer;
+                if (userTokens.length === targetTokens.length) {
+                    isCorrect = targetTokens.every(t => userTokens.includes(t));
+                }
+            } else {
+                const cleanUser = String(selectedAnswer).trim();
+                const cleanTarget = String(q.answer).trim();
+                isCorrect = (cleanUser === cleanTarget || cleanUser.includes(cleanTarget));
+            }
+
+            if (isCorrect) {
+                score += 5;
+                playSound('correct');
+                showModal('🎉', '太棒了，答對囉！', '答得漂亮！宇坤老師為你加 5 分！', true);
+            } else {
+                playSound('wrong');
+                // 答錯才解鎖顯示提示
+                document.getElementById('hint-text').innerText = q.hint;
+                document.getElementById('hint-container').classList.remove('hidden');
+                document.getElementById('teacher-tip').innerText = '別氣餒！請參考下方的宇坤老師提示，再試一次吧！';
+                showModal('💪', '答錯囉！請看提示', '哎呀！這題答錯了，宇坤老師已經幫你把提示解鎖囉，請再想想看！', false);
+            }
+        }
+
+        function showModal(icon, title, message, isNext) {
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            const modalBtn = document.querySelector('#custom-modal button');
+            if (isNext) {
+                modalBtn.innerText = '下一關 ➡️';
+                modalBtn.onclick = closeModalToNext;
+            } else {
+                modalBtn.innerText = '關閉提示繼續挑戰 🔄';
+                modalBtn.onclick = closeOnlyModal;
+            }
+
+            document.getElementById('custom-modal').classList.remove('hidden');
+            document.getElementById('custom-modal').classList.add('flex');
+        }
+
+        function closeOnlyModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+            document.getElementById('custom-modal').classList.remove('flex');
+        }
+
+        function closeModalToNext() {
+            document.getElementById('custom-modal').classList.add('hidden');
+            document.getElementById('custom-modal').classList.remove('flex');
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResultScreen();
+            }
+        }
+
+        function showResultScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = `${score} / 110`;
+
+            const titleEl = document.getElementById('result-title');
+            const descEl = document.getElementById('result-desc');
+            const emojiEl = document.getElementById('result-emoji');
+
+            if (score === 110) {
+                emojiEl.innerText = '👑';
+                titleExpr = '太神啦！滿分通關！';
+                descEl.innerText = '你獲得了數學大師勳章！宇坤老師以你為榮！';
+            } else if (score >= 80) {
+                emojiEl.innerText = '🌟';
+                titleExpr = '表現超優秀！';
+                descEl.innerText = '你對五年級數學已經相當熟悉了，明天段考一定沒問題！';
+            } else {
+                emojiEl.innerText = '🌱';
+                titleExpr = '繼續加油喔！';
+                descEl.innerText = '再複習一下錯題，明天考試一定能拿到好成績！';
+            }
+            titleEl.innerText = titleExpr;
+        }
+
+        function restartGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
